@@ -1,30 +1,28 @@
-import { createClient } from "contentful";
-import Link from 'next/link'; // Import Link from Next.js
+/* page.tsx */
+import Link from "next/link";
 import { BlogQueryResult } from "./types";
-
-// const client = createClient({
-//   space: 'ftkzvu6kei7h',
-//   accessToken: 'dRzKTEsCUo7Nc5NX5MO76eldUsKvTyIiiDrCDy2gsrc'
-// });
+import { createClient } from "contentful";
 
 const client = createClient({
-  space: process.env.SPACE_ID!,
-  accessToken: process.env.ACCESS_TOKEN!,
+  space: process.env.SPACE_ID,
+  accessToken: process.env.ACCESS_TOKEN,
 });
+
+const getBlogEntries = async (): Promise<BlogQueryResult> => {
+  const entries = await client.getEntries({ content_type: "blog" });
+  return entries;
+};
 
 export default async function Home() {
   const blogEntries = await getBlogEntries();
-  console.log("Home -> blogEntries", blogEntries);
-
   return (
-    <div>
+    <main className="flex  flex-col  justify-between p-24">
       {blogEntries.items.map((singlePost) => {
         const { slug, title, date } = singlePost.fields;
-
         return (
-          <div className="pb-4 mb-4 border-b border-neutral-200" key={slug}>
-            <Link className="hover:text-blue-700" href={`/articles/${slug}`}>
-              <h2  className="font-extrabold text-xl">{title}</h2>
+          <div key={slug} className="mb-5">
+            <Link href={`/articles/${slug}`}>
+              <h2>{title}</h2>
               <span>
                 Posted on{" "}
                 {new Date(date).toLocaleDateString("en-US", {
@@ -37,11 +35,6 @@ export default async function Home() {
           </div>
         );
       })}
-    </div>
+    </main>
   );
 }
-
-const getBlogEntries = async (): Promise<BlogQueryResult> => {
-  const entries = await client.getEntries({ content_type: "blog" });
-  return entries;
-};
